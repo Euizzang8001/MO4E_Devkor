@@ -1,6 +1,0 @@
-torch
-numpy
-pykrx
-tensorflow
-pandas
-scikit-learn
