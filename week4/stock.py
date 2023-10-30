@@ -5,6 +5,9 @@ from datetime import timedelta
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 
+from src.stock_algo import get_today, get_market_fundamental, get_nexon_stock, normalization, create_dataset, reshape_and_learning, forecast
+
+
 # from src.stock_algo import
 
 kst = pendulum.timezone('Asia/Seoul')
@@ -30,8 +33,28 @@ with DAG(
     catchup=False,
     tags=['stock', 'Euizzang']
 ) as dag:
-    #
     get_market_fundamental_task = PythonOperator(
-        task_id = 'get_market_fundamental_task',
-        python_callable=get_market_fundamental_task,
+        task_id='get_market_fundamental_task',
+        python_callable=get_market_fundamental,
     )
+    get_nexon_stock_task = PythonOperator(
+        task_id = 'get_nexon_stock_task',
+        python_callable=get_nexon_stock,
+    )
+    normalization_task = PythonOperator(
+        task_id='normalization_task',
+        python_callable=normalization,
+    )
+    create_dataset_task = PythonOperator(
+        task_id='create_dataset_task',
+        python_callable= create_dataset,
+    )
+    reshape_and_learning_task = PythonOperator(
+        task_id = 'reshape_and_learning_task',
+        python_callable=reshape_and_learning,
+    )
+    forecast_task = PythonOperator(
+        task_id = 'forecast_task',
+        python_callable = forecast,
+    )
+    get_market_fundamental_task >> get_market_fundamental_task >> get_nexon_stock_task >> normalization_task >> create_dataset_task >> reshape_and_learning_task >> forecast_task
