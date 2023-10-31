@@ -2,4 +2,4 @@ pykrx
 pandas
 numpy
 tensorflow
-sckit-learn
+scikit-learn

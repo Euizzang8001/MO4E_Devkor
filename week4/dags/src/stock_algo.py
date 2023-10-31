@@ -1,7 +1,6 @@
 from datetime import timedelta, datetime
 import pandas as pd
 import numpy as np
-import seaborn as sns
 from sklearn.preprocessing import MinMaxScaler
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, LSTM, Dropout
