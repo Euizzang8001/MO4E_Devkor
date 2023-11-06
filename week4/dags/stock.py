@@ -1,4 +1,3 @@
-import os
 import pendulum
 from datetime import timedelta
 
@@ -11,7 +10,7 @@ from src.stock_algo import get_today, get_nexon, nexon_xy, nexon_prep, lstm_nexo
 # from src.stock_algo import
 
 kst = pendulum.timezone('Asia/Seoul')
-dag_name = os.path.basename(__file__).split('.')[0]
+dag_name = "Euizzang_First_Dag"
 
 default_args = {
     'owner': 'Euizzang',
@@ -22,7 +21,8 @@ with DAG(
     dag_id=dag_name,
     default_args=default_args,
     description='어려우어어어어어어어어',
-    schedule_dage = pendulum.datetime(2023, 11, 6, tz=kst),
+    schedule_interval=timedelta(minutes=10),
+    start_date = pendulum.datetime(2023, 11, 6, tz=kst),
     catchup=False,
     tags=['stock', 'Euizzang']
 ) as dag:

@@ -9,15 +9,15 @@ import tensorflow as tf
 def get_today():
     dt_now = str(datetime.now().date())
     print(f'{dt_now} 기준')
-    dt_now = ''.join(c for c in dt_now not in '-')
+    dt_now = ''.join(c for c in dt_now if c not in '-')
     return dt_now
 
 def get_nexon():
     dt_now = get_today()
-    nexon = stock.get_market_ohclv("20150925", dt_now, "225570")
+    nexon = stock.get_market_ohlcv("20150925", dt_now, "225570")
     nexon.to_csv(f'./{dt_now}_nexon_stock.csv', index=True)
 
-def nexon_xy(k):
+def nexon_xy():
     dt_now = get_today()
     nexon = pd.read_csv(f'./{dt_now}_nexon_stock.csv', index_col=0)
     scaler = MinMaxScaler()
@@ -26,8 +26,6 @@ def nexon_xy(k):
     scale_cols_for_y = ['종가']
     test = scaler.fit_transform(nexon[scale_cols_for_x])
     test2 = scaler2.fit_transform(nexon[scale_cols_for_y])
-    if k == 0:
-        return scaler, scaler2
     X = np.array([test[i:i+1] for i in range(test.shape[0]-1 )])
     y = np.array([test2[i+1] for i in range(test2.shape[0]-1)])
     return X, y
@@ -50,10 +48,18 @@ def lstm_nexon():
     return result_model
 
 def predict_or_check():
+    dt_now = get_today()
+    nexon = pd.read_csv(f'./{dt_now}_nexon_stock.csv', index_col=0)
+    scaler = MinMaxScaler()
+    scaler2 = MinMaxScaler()
+    scale_cols_for_x = ['시가', '고가', '저가', '거래량']
+    scale_cols_for_y = ['종가']
+    test = scaler.fit_transform(nexon[scale_cols_for_x])
+    test2 = scaler2.fit_transform(nexon[scale_cols_for_y])
+
     result_model = lstm_nexon()
     dt_now = get_today()
-    scaler, scaler2 = nexon_xy()
-    current_time = datetime.datetime.now()
+    current_time = datetime.now()
     today_nexon = stock.get_market_ohlcv(dt_now, dt_now, "225570")
     today_info = scaler.transform([today_nexon[i].values[0] for i in ['시가', '고가', '저가', '거래량']])
     test = result_model.predict(np.array([today_info]))
