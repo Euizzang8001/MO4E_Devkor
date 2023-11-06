@@ -1,127 +1,66 @@
-from datetime import timedelta, datetime
-import pandas as pd
 import numpy as np
-from sklearn.preprocessing import MinMaxScaler
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, LSTM, Dropout
+import pandas as pd
+from datetime import datetime
 from pykrx import stock
-from statsmodels.tsa.arima_model import ARIMA
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.model_selection import train_test_split
+import tensorflow as tf
 
-def get_today(): #오늘 날짜 받아오기
+def get_today():
     dt_now = str(datetime.now().date())
     print(f'{dt_now} 기준')
-    dt_now = ''.join(c for c in dt_now if c not in '-')
+    dt_now = ''.join(c for c in dt_now not in '-')
     return dt_now
 
-def get_market_fundamental(): #시장 정보 get
+def get_nexon():
     dt_now = get_today()
-    df = stock.get_market_fundamental_by_ticker(date=dt_now)
-    print(df.head())
-    df.to_csv(f'./{dt_now}_market_fundamental.csv', index = True)
-
-def get_nexon_stock():
-    dt_now = get_today()
-    nexon = stock.get_market_ohlcv("20150925", dt_now, "225570")
-    print(nexon.head)
+    nexon = stock.get_market_ohclv("20150925", dt_now, "225570")
     nexon.to_csv(f'./{dt_now}_nexon_stock.csv', index=True)
 
-def normalization():
+def nexon_xy(k):
     dt_now = get_today()
-    df = pd.read_csv(f'./{dt_now}_nexon_stock.csv', index_col = 0)
-    nexon = df[['종가']]
+    nexon = pd.read_csv(f'./{dt_now}_nexon_stock.csv', index_col=0)
     scaler = MinMaxScaler()
-    nexon = scaler.fit_transform(nexon)
-    nexon.to_csv(f'./{dt_now}_nexon_normalization.csv', index_col = 0)
+    scaler2 = MinMaxScaler()
+    scale_cols_for_x = ['시가', '고가', '저가', '거래량']
+    scale_cols_for_y = ['종가']
+    test = scaler.fit_transform(nexon[scale_cols_for_x])
+    test2 = scaler2.fit_transform(nexon[scale_cols_for_y])
+    if k == 0:
+        return scaler, scaler2
+    X = np.array([test[i:i+1] for i in range(test.shape[0]-1 )])
+    y = np.array([test2[i+1] for i in range(test2.shape[0]-1)])
+    return X, y
 
-def create_dataset():
+def nexon_prep():
+    X, y = nexon_xy()
+    X_model_input = tf.keras.layers.Input(shape=(X.shape[1], X.shape[2]))
+    X_model_output = tf.keras.layers.LSTM(32, activation='relu', return_sequences=False)(X_model_input)
+    X_model_output = tf.keras.layers.Dense(1, activation='linear')(X_model_output)
+    X_model_output = tf.keras.layers.Dense(1)(X_model_output)
+    
+def lstm_nexon():
+    X, y = nexon_xy(0)
+    X_model_input, X_model_output = nexon_prep()
+    x_train, x_valid, y_train, y_valid = train_test_split(X, y, test_size = 0.2) 
+    result_model = tf.keras.Model(inputs=X_model_input, outputs=X_model_output)
+    result_model.compile(optimizer='adam', loss='mean_squared_error', metrics=['acc'])
+    early_stop = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=3)
+    result_model.fit(x_train, y_train, batch_size = 1, epochs=100, validation_data=(x_valid, y_valid), callbacks=[early_stop])                
+    return result_model
+
+def predict_or_check():
+    result_model = lstm_nexon()
     dt_now = get_today()
-    nexon = pd.read_csv(f'./{dt_now}_nexon_normalization.csv', index_col = 0)
-    X = []
-    Y = []
-    for i in range(60, len(nexon)):
-        X.append(nexon[i-60:i, 0])
-        Y.append(nexon[i, 0])
-    X, Y = np.array(X), np.array(Y)
-    X.to_csv(f'./{dt_now}_X.csv', index_col = 0)
-    Y.to_csv(f'./{dt_now}_Y.csv', index_col = 0)
-
-
-def reshape_and_learning(setdate):
-    dt_now = get_today()
-    X = pd.read_csv(f'./{dt_now}_X.csv', index_col = 0)
-    Y = pd.read_csv(f'./{dt_now}_Y.csv', index_col = 0)
-    split = int(0.8 * len(X))
-    X_train, Y_train = X[:split], Y[:split]
-    X_test, Y_test = X[split:], Y[split:]
-    #3차원으로 reshape
-    X_train = np.reshape(X_train, (X_train.shape[0], X_train.shape[1], 1))
-    X_test = np.reshape(X_test, (X_test.shape[0], X_test.shape[1], 1))
-
-    model = Sequential()
-    model.add(LSTM(50, return_sequences=True, input_shape=(X_train.shape[1], 1)))
-    model.add(Dropout(0.2))
-    model.add(LSTM(50, return_sequences=True))
-    model.add(Dropout(0.2))
-    model.add(LSTM(50, return_sequences=True))
-    model.add(Dropout(0.2))
-    model.add(LSTM(50))
-    model.add(Dropout(0.2))
-    model.add(Dense(1))
-
-    model.complie(optimizer='adam', loss = 'mean_squared_erro') 
-
-    history = model.fit(X_train, Y_train, epochs = 50, batch_size=32, validation_data=(X_test,Y_test))
-    model = ARIMA(nexon['종가'], order = (2, 2, 2))
-    model_fit = model.fit(disp=0)
-    print(model_fit.summary())
-
-    forecast = model_fit.forecast(steps=setdate)
-    return forecast
-
-def forecast():
-    dt_now = get_today()
-    print(f'{dt_now} 다음 날의 주가는? {reshape_and_learning(1)}')
-
-
-
-# #필요한 변수만 선택
-# nexon = nexon[['종가']]
-# #데이터 정규화
-# scaler = MinMaxScaler()
-# nexon = scaler.fit_transform(nexon)
-# #데이터셋 생성
-# X = []
-# Y = []
-# for i in range(60, len(nexon)):
-#     X.append(nexon[i-60:i, 0])
-#     Y.append(nexon[i, 0])
-# X, Y = np.array(X), np.array(Y)
-# #train/test set 분리
-# split = int(0.8 * len(X))
-# X_train, Y_train = X[:split], Y[:split]
-# X_test, Y_test = X[split:], Y[split:]
-# #3차원으로 reshape
-# X_train = np.reshape(X_train, (X_train.shape[0], X_train.shape[1], 1))
-# X_test = np.reshape(X_test, (X_test.shape[0], X_test.shape[1], 1))
-
-# #LSTM 모델 생성
-# model = Sequential()
-# model.add(LSTM(50, return_sequences=True, input_shape=(X_train.shape[1], 1)))
-# model.add(Dropout(0.2))
-# model.add(LSTM(50, return_sequences=True))
-# model.add(Dropout(0.2))
-# model.add(LSTM(50, return_sequences=True))
-# model.add(Dropout(0.2))
-# model.add(LSTM(50))
-# model.add(Dropout(0.2))
-# model.add(Dense(1))
-
-# model.complie(optimizer='adam', loss = 'mean_squared_erro')
-
-# history = model.fit(X_train, Y_train, epochs = 50, batch_size=32, validation_data=(X_test,Y_test))
-
-# model = ARIMA(nexon['종가'], order = (2, 2, 2))
-# model_fit = model.fit(disp=0)
-# print(model_fit.summary())
-# forecast = model_fit.forecast(steps=1)
-# print(forecast)
+    scaler, scaler2 = nexon_xy()
+    current_time = datetime.datetime.now()
+    today_nexon = stock.get_market_ohlcv(dt_now, dt_now, "225570")
+    today_info = scaler.transform([today_nexon[i].values[0] for i in ['시가', '고가', '저가', '거래량']])
+    test = result_model.predict(np.array([today_info]))
+    today_pred = scaler2.inverse_transform(test)
+    today_pred = "{:.2f}".format(today_pred[0][0])
+    if current_time.hour >= 15:
+        today_close = today_nexon['종가'].values[0]
+        print(f'넥슨!\n오늘의 예측 종가는?:\n{today_pred}원\n오늘의 진짜 종가!:\n{today_close}')
+    else:
+         print(f'넥슨!\n오늘의 예측 종가는?:\n{today_pred}원')
