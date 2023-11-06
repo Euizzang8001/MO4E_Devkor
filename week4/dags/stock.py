@@ -22,7 +22,7 @@ with DAG(
     default_args=default_args,
     description='어려우어어어어어어어어',
     schedule_interval=timedelta(hours=12),
-    start_date = pendulum.datetime(2023, 11, 6, tz=kst),
+    start_date = pendulum.datetime(2023, 11, 6, 9, 0, 0, tz=kst),
     catchup=False,
     tags=['stock', 'Euizzang']
 ) as dag:
