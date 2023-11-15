@@ -1,0 +1,4 @@
+{
+    "1": {"id": 1, "name": "John", "age": 25, "role": "student"},
+    "2": {"id": 2, "name": "Jane", "age": 30, "role": "admin"}
+ }
