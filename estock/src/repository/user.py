@@ -23,12 +23,21 @@ class UserRepository():
     def get_user_by_name(self, user_name: str) -> User:
         return self.db.query(UserModel).filter(UserModel.user_name == user_name).first()
     
+    def delete_user(self, user_id: str) ->User:
+        exist = self.get_user_by_id(user_id = user_id)
+        if not exist:
+            return {f'404: not found'}
+        else:
+            user_name = exist.user_name
+            self.db.delete(exist)
+            return {f'다음에 또 만나요..{user_name}님'}
+
     def revise_user(self, user_id: str, user_revise_dto: UserRevise, commit:bool = True) -> User:
         exist =self.get_user_by_id(user_id = user_id)
         if not exist:
             return {'404: not found'}
         else:
-            #데이터 제거 코드 필요
+            self.db.delete(exist)
             data = UserModel(
                 user_id = user_id,
                 user_name = user_revise_dto.user_name,

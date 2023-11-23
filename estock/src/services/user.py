@@ -24,6 +24,6 @@ class UserService():
     def revise_user(self, user_id:str, user_revise_dto: UserRevise) -> User:
         return self.repository.revise_user(user_id, user_revise_dto)
     
-    def delete_user(selt, user_id:str) -> User:
+    def delete_user(self, user_id:str) -> User:
         return self.repository.delete_user(user_id)
     
