@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 
-from schemas.estock import User, UserCreate, UserAll
-from services.estock import UserService
+from schemas.user import User, UserCreate, UserAll, UserRevise
+from services.user import UserService
 
 router = APIRouter(
     prefix='/estock',
@@ -25,3 +25,14 @@ async def get_user(user_id: str, service: UserService = Depends()):
 async def create_user(user_create_dto: UserCreate, service: UserService = Depends()):
     result = service.create_user(user_create_dto)
     return result
+
+@router.put('/revise/{user_id}', response_model = User)
+async def revivse_user(user_id: str, user_revise_dto: UserRevise, service: UserService = Depends()):
+    result = service.revise_user(user_id, user_revise_dto)
+    return result
+
+@router.delete('/delete/{user_id}',response_model = User)
+async def delete_user(user_id: str, service: UserService = Depends()):
+    result = service.delete_user(user_id)
+
+    

@@ -5,7 +5,7 @@ import uuid
 
 from config.database import get_db
 from models.user import User as UserModel
-from schemas.user import User, UserCreate
+from schemas.user import User, UserCreate, UserRevise
 
 class UserRepository():
     def __init__(self, db: Session = Depends(get_db)) -> None : 
@@ -23,6 +23,25 @@ class UserRepository():
     def get_user_by_name(self, user_name: str) -> User:
         return self.db.query(UserModel).filter(UserModel.user_name == user_name).first()
     
+    def revise_user(self, user_id: str, user_revise_dto: UserRevise, commit:bool = True) -> User:
+        exist =self.get_user_by_id(user_id = user_id)
+        if not exist:
+            return {'404: not found'}
+        else:
+            #데이터 제거 코드 필요
+            data = UserModel(
+                user_id = user_id,
+                user_name = user_revise_dto.user_name,
+                age = user_revise_dto.age,
+                priority = user_revise_dto.priority,
+            )
+            self.db.add(data)
+            if commit:
+                self.db.commit()
+                self.db.refresh(data)
+            return data
+            
+
     def create_user(self, user_create_dto: UserCreate, commit: bool = True) -> User:
         user_name = user_create_dto.user_name
         age = user_create_dto.age

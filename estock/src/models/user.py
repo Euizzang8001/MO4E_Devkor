@@ -26,6 +26,7 @@ class User(Base):
         String(255),
         comment = "Priority",
     )
+    
     created_datetime = Column(
         DateTime(timezone=True),
         server_default=current_timestamp(),
