@@ -26,7 +26,7 @@ class UserRepository():
     def delete_user(self, user_id: str) ->User:
         exist = self.get_user_by_id(user_id = user_id)
         if not exist:
-            return {f'404: not found'}
+            return {'404: not found'}
         else:
             user_name = exist.user_name
             self.db.delete(exist)
@@ -54,7 +54,8 @@ class UserRepository():
     def create_user(self, user_create_dto: UserCreate, commit: bool = True) -> User:
         user_name = user_create_dto.user_name
         age = user_create_dto.age
-        
+        priority = user_create_dto.priority
+
         exists = self.get_user_by_name(user_name=user_name)
         if exists:
             return exists
@@ -64,9 +65,14 @@ class UserRepository():
                 user_id=user_id,
                 user_name=user_name,
                 age=age,
+                priority=priority,
             )
             self.db.add(data)
             if commit:
                 self.db.commit()
                 self.db.refresh(data)
             return data
+    def result_use(self, user_id: str) -> User:
+       exist =self.get_user_by_id(user_id = user_id)
+       priority = exist.priority
+       

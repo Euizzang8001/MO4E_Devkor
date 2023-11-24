@@ -23,6 +23,7 @@ class User(Base):
     )
     priority = Column(
         String(255),
+        nullable=True,
         comment = "Priority",
     )
     

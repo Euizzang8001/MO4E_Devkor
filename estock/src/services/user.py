@@ -27,3 +27,6 @@ class UserService():
     def delete_user(self, user_id:str) -> User:
         return self.repository.delete_user(user_id)
     
+    def get_priority_result(self, user_id:str) -> User:
+        return self.repository.result_user(user_id)
+    
