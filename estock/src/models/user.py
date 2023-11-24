@@ -8,13 +8,12 @@ class User(Base):
     user_id = Column( 
         String(255),
         primary_key=True,
-        Unique = True,
+        unique = True,
         comment='User ID'
     )
     user_name = Column(
         String(255),
         nullable=False,
-        unique=True,
         comment="User Name",
     )
     age = Column(
