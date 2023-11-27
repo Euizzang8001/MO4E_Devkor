@@ -31,10 +31,10 @@ async def revivse_user(user_id: str, user_revise_dto: UserRevise, service: UserS
     result = service.revise_user(user_id, user_revise_dto)
     return result
 
-# @router.delete('/delete/{user_id}',response_model = User)
-# async def delete_user(user_id: str, service: UserService = Depends()):
-#     result = service.delete_user(user_id)
-#     return result
+@router.delete('/delete/{user_id}',response_model = User)
+async def delete_user(user_id: str, service: UserService = Depends()):
+    result = service.delete_user(user_id)
+    return result
 
 @router.get('/{user_id}/priority', response_model = User)
 async def priority_result(user_id: str, service: UserService = Depends()):
