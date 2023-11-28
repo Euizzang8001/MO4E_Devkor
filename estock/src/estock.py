@@ -31,7 +31,7 @@ if st.button("Login"):
         #계정 수정
         if st.button("Revise"):
             user_name = st.text_input("user name")
-            user_age = st.text_input("user age")
+            user_age = st.number_input("user age", value = 0, step=1, format="%d")
             user_priority = st.text_input("user_priority")
             user_info = User(
                 user_name=user_name,
@@ -81,7 +81,7 @@ else:#로그인 시도 안 했을 때
     #새 계정 생성
     if st.button('Create New Account'):
         user_name = st.text_input("user name")
-        user_age = st.text_input("user age")
+        user_age = st.number_input("user age", value = 0, step=1, format="%d")
         user_priority = st.text_input("user_priority")
         user_info = UserCreate(
             user_name=user_name,
@@ -89,6 +89,7 @@ else:#로그인 시도 안 했을 때
             priority=user_priority,
             score=0,
             prediction=0,
+            delta=0,
         )
         if st.button('Create'):
             create_url = back_url + f"/create"
