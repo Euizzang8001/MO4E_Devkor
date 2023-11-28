@@ -7,8 +7,8 @@ from routers.user import get_all_users, get_user, create_user, revivse_user, del
 from schemas.user import User, UserCreate, UserBase, UserAll, UserRevise
 #백엔드 작업 전까지
 db = {
-    "1": {"id": 1, "name": "Euizzang", "age": 23, "role": "student", "score": 98, "priority" : "225570", "prediction": 0},
-    "2": {"id": 2, "name": "king",  "age": 100, "role": "admin"}
+    "1": {"id": 1, "name": "Euizzang", "age": 23, "score": 98, "priority" : "225570", "prediction": 0},
+    "2": {"id": 2, "name": "king",  "age": 100, "score": 98, "priority" : "225570", "prediction": 0}
 }
 def login(user_id):
     user = db[user_id]
@@ -33,30 +33,70 @@ st.title('And :blue[Develop] Your Predictive Abilities!')
 user_id = st.text_input("user_id")
 if st.button("Login"):
     user = login(user_id)
-    if user:
+    if user:#로그인 성공 시 및 유저 정보 get
         st.success(f"Hi! {user['name']}!!")
-#       priority = db에서 user를 찾고 그 user의 선호 종목
-#       data = stock.get_market_ohlcv("20011008", dt_now, priority)
-#       data_df = pd.DataFrasme(data, columns=["시가", "고가", "저가", "종가", "    거래량"])
+        #계정 수정
+        if st.button("Revise"):
+            user_name = st.text_input("user name")
+            user_age = st.text_input("user age")
+            user_priority = st.text_input("user_priority")
+            user_info = User(
+                user_name=user_name,
+                age=user_age,
+                priority=user_priority,
+                score=user["score"],
+                prediction=user["prediction"],
+            )
+            revivse_user(user["id"], user_info)
+
+        #계정 삭제
+        if st.button("Delete"):
+            delete_user(user["id"])
+
+        #선호 주식 정보 제공
         data = stock.get_market_ohlcv("20011008", dt_now, user['priority'])
         data_df = pd.DataFrame(data, columns=["시가", "고가", "저가", "종가", "거래량"])
         st.write(f"{user['name']}'s Prefer Stock")
         st.write(data_df)
         st.line_chart(data_df['종가'])
+
+        #현재 점수 제공
         st.metric(label=f"{user['name']}\'s Current Score", value = user['score'], delta_color = 'inverse')
+        
+        #오늘의 주식 예측값 설정 및 저장
         st.write(f"{user['name']}'s today prediction!!")
-        #예측 주가 저장 및 점수 계산 + 에어플로우를 통한 예측값 힌트로 제공 일단 지금은 안됨
         user['prediction'] = st.number_input("Enter Your Prediction")
-        st.write(user['prediction']) 
-    else:
+        st.write(user['prediction'])
+        
+        #에어플로우를 통한 예측값 힌트로 제공 일단 지금은 안됨
+        
+         
+    else:#로그인 실패시
         st.error("Invalid Username!")
+        #기본 삼성 주식 정보 제공
         data = stock.get_market_ohlcv("20011008", dt_now, "005930")
         data_df = pd.DataFrame(data, columns=["시가", "고가", "저가", "종가", "거래량"])
         check = st.checkbox('I want to see the raw datas')
         if check:
             st.write(data_df)
         st.line_chart(data_df['종가'])
-else:
+
+else:#로그인 시도 안 했을 때
+    #새 계정 생성
+    if st.button('Create New Account'):
+        user_name = st.text_input("user name")
+        user_age = st.text_input("user age")
+        user_priority = st.text_input("user_priority")
+        user_info = UserCreate(
+            user_name=user_name,
+            age=user_age,
+            priority=user_priority,
+            score=0,
+           prediction=0,
+        )
+        if st.button('Create'):
+            create_user(user_info)
+    #기본 삼성 주식 정보 제공
     data = stock.get_market_ohlcv("20011008", dt_now, "005930")
     data_df = pd.DataFrame(data, columns=["시가", "고가", "저가", "종가", "거래량"])
     check = st.checkbox('I want to see the raw datas')
@@ -65,3 +105,6 @@ else:
     st.line_chart(data_df['종가'])
 
 #랭킹 데이터 만들어서 추가
+# all_data = pd.DataFrame(get_all_users())
+# st.dataframe(all_data, use)
+# st.table([(.name, person.age) for person in sorted_people])

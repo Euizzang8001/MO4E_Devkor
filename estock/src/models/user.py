@@ -26,7 +26,16 @@ class User(Base):
         nullable=True,
         comment = "Priority",
     )
-    
+    score = Column(
+        float,
+        nullable=False,
+        comment = "User Score"
+    )
+    prediction = Column(
+        Integer,
+        nullable=False,
+        comment = "User Today Prediction"
+    )    
     created_datetime = Column(
         DateTime(timezone=True),
         server_default=current_timestamp(),
