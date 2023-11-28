@@ -5,6 +5,9 @@ from pykrx import stock
 from datetime import datetime
 from routers.user import get_all_users, get_user, create_user, revivse_user, delete_user, priority_result
 from schemas.user import User, UserCreate, UserBase, UserAll, UserRevise
+import requests
+
+back_url = "http://127.0.0.1:8000"
 #백엔드 작업 전까지
 db = {
     "1": {"id": 1, "name": "Euizzang", "age": 23, "score": 98, "priority" : "225570", "prediction": 0},
