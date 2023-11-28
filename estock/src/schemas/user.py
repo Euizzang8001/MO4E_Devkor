@@ -6,8 +6,10 @@ class UserBase(BaseModel):
     user_name: str
     age: int
     priority: str
-    score: float
+    score: int
     prediction: int
+    delta: int
+
     
 class UserCreate(UserBase):
     pass

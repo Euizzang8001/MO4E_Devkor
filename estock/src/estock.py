@@ -3,18 +3,14 @@ import pandas as pd
 import numpy as np
 from pykrx import stock
 from datetime import datetime
-from routers.user import get_all_users, get_user, create_user, revivse_user, delete_user, priority_result
-from schemas.user import User, UserCreate, UserBase, UserAll, UserRevise
+from schemas.user import User, UserCreate
 import requests
 
 back_url = "http://127.0.0.1:8000"
-#백엔드 작업 전까지
-db = {
-    "1": {"id": 1, "name": "Euizzang", "age": 23, "score": 98, "priority" : "225570", "prediction": 0},
-    "2": {"id": 2, "name": "king",  "age": 100, "score": 98, "priority" : "225570", "prediction": 0}
-}
+
 def login(user_id):
-    user = db[user_id]
+    get_user_url = back_url + '/get'
+    user = requests.get(get_user_url, json=user_id)
     if not user:
         return False
     else:
@@ -22,12 +18,6 @@ def login(user_id):
 dt_now = str(datetime.now().date())
 dt_now = ''.join(c for c in dt_now if c not in '-')
 
-# def login(user_id):
-#     user = get_user(user_id)
-#     if not user:
-#         return False
-#     else:
-#         return user
 
 #기본 페이지
 st.title(':blue[Choose] The Stock You Want! :sunglasses:')
@@ -49,12 +39,15 @@ if st.button("Login"):
                 priority=user_priority,
                 score=user["score"],
                 prediction=user["prediction"],
+                delta = user["delta"],
             )
-            revivse_user(user["id"], user_info)
+            revise_url = back_url + f"/revise/{user['id']}"
+            response = requests.put(revise_url, json=user_info)
 
         #계정 삭제
         if st.button("Delete"):
-            delete_user(user["id"])
+            delete_url = back_url + f"/delete/{user['id']}"
+            response = requests.delete(delete_url, json=user_info)
 
         #선호 주식 정보 제공
         data = stock.get_market_ohlcv("20011008", dt_now, user['priority'])
@@ -64,7 +57,7 @@ if st.button("Login"):
         st.line_chart(data_df['종가'])
 
         #현재 점수 제공
-        st.metric(label=f"{user['name']}\'s Current Score", value = user['score'], delta_color = 'inverse')
+        st.metric(label=f"{user['name']}\'s Current Score", value = user['score'], delta = user['delta'], delta_color = 'inverse')
         
         #오늘의 주식 예측값 설정 및 저장
         st.write(f"{user['name']}'s today prediction!!")
@@ -95,10 +88,11 @@ else:#로그인 시도 안 했을 때
             age=user_age,
             priority=user_priority,
             score=0,
-           prediction=0,
+            prediction=0,
         )
         if st.button('Create'):
-            create_user(user_info)
+            create_url = back_url + f"/create"
+            response = requests.post(create_url, json=user_info)
     #기본 삼성 주식 정보 제공
     data = stock.get_market_ohlcv("20011008", dt_now, "005930")
     data_df = pd.DataFrame(data, columns=["시가", "고가", "저가", "종가", "거래량"])

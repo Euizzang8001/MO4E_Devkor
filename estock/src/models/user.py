@@ -27,14 +27,19 @@ class User(Base):
         comment = "Priority",
     )
     score = Column(
-        float,
+        Integer,
         nullable=False,
-        comment = "User Score"
+        comment = "User Score",
     )
     prediction = Column(
         Integer,
         nullable=False,
-        comment = "User Today Prediction"
+        comment = "User Today Prediction",
+    )
+    delta = Column(
+        Integer,
+        nullable=False,
+        comment = 'Delta',
     )    
     created_datetime = Column(
         DateTime(timezone=True),

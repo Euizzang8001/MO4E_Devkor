@@ -12,7 +12,7 @@ class UserService():
         total = self.repository.get_count_by_user()
         return {
             "total": total,
-            "users": users
+            "users": users,
         } 
     
     def get_user_by_id(self, user_id: str) -> User:
@@ -27,6 +27,7 @@ class UserService():
     def delete_user(self, user_id:str) -> User:
         return self.repository.delete_user(user_id)
     
-    def get_priority_result(self, user_id:str) -> User:
-        return self.repository.result_user(user_id)
+    def get_rank(self) -> User:
+        users = self.repository.get_rank()
+        return {users}
     

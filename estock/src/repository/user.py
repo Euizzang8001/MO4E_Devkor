@@ -43,6 +43,8 @@ class UserRepository():
                 user_name = user_revise_dto.user_name,
                 age = user_revise_dto.age,
                 priority = user_revise_dto.priority,
+                score=user_revise_dto.score,
+                delta = user_revise_dto.delta,
             )
             self.db.add(data)
             if commit:
@@ -72,7 +74,9 @@ class UserRepository():
                 self.db.commit()
                 self.db.refresh(data)
             return data
-    def result_use(self, user_id: str) -> User:
-       exist =self.get_user_by_id(user_id = user_id)
-       priority = exist.priority
+    
+    def get_rank(self) -> List[User]:
+        return (
+                    self.db.query(UserModel).order_by(UserModel.score.desc()).limit(10).all()
+                )
        
