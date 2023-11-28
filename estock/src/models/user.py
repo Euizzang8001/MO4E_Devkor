@@ -41,7 +41,7 @@ class User(Base):
         nullable=False,
         comment = 'Delta',
     )    
-    created_datetime = Column(
+    last_revised_time = Column(
         DateTime(timezone=True),
         server_default=current_timestamp(),
         nullable=False,

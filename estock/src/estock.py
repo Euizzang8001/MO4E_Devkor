@@ -6,15 +6,8 @@ from datetime import datetime
 from schemas.user import User, UserCreate
 import requests
 
-back_url = "http://127.0.0.1:8000"
-
-def login(user_id):
-    get_user_url = back_url + '/get'
-    user = requests.get(get_user_url, json=user_id)
-    if not user:
-        return False
-    else:
-        return user
+back_url = "http://127.0.0.1:8000/estock"
+get_user_url = back_url + '/get'
 dt_now = str(datetime.now().date())
 dt_now = ''.join(c for c in dt_now if c not in '-')
 
@@ -25,9 +18,10 @@ st.title('And :blue[Develop] Your Predictive Abilities!')
 
 user_id = st.text_input("user_id")
 if st.button("Login"):
-    user = login(user_id)
+    user = requests.get(get_user_url, params={'user_id': user_id})
     if user:#로그인 성공 시 및 유저 정보 get
-        st.success(f"Hi! {user['name']}!!")
+        user = user.json()
+        st.success(f"Hi! {user['user_name']}!!")
         #계정 수정
         if st.button("Revise"):
             user_name = st.text_input("user name")
@@ -41,31 +35,31 @@ if st.button("Login"):
                 prediction=user["prediction"],
                 delta = user["delta"],
             )
-            revise_url = back_url + f"/revise/{user['id']}"
-            response = requests.put(revise_url, json=user_info)
+            revise_url = back_url + f"/revise/{user['user_id']}"
+            response = requests.put(revise_url, params={'user_id':user_id, 'user_revise_dto': user_info})
 
         #계정 삭제
         if st.button("Delete"):
-            delete_url = back_url + f"/delete/{user['id']}"
-            response = requests.delete(delete_url, json=user_info)
+            delete_url = back_url + f"/delete/{user['user_id']}"
+            response = requests.delete(delete_url, params={'user_id': user_id})
 
         #선호 주식 정보 제공
         data = stock.get_market_ohlcv("20011008", dt_now, user['priority'])
         data_df = pd.DataFrame(data, columns=["시가", "고가", "저가", "종가", "거래량"])
-        st.write(f"{user['name']}'s Prefer Stock")
+        st.write(f"{user['user_name']}'s Prefer Stock")
         st.write(data_df)
         st.line_chart(data_df['종가'])
 
         #현재 점수 제공
-        st.metric(label=f"{user['name']}\'s Current Score", value = user['score'], delta = user['delta'], delta_color = 'inverse')
+        st.metric(label=f"{user['user_name']}\'s Current Score", value = user['score'], delta = user['delta'], delta_color = 'inverse')
         
         #오늘의 주식 예측값 설정 및 저장
-        st.write(f"{user['name']}'s today prediction!!")
+        st.write(f"{user['user_name']}'s today prediction!!")
         user['prediction'] = st.number_input("Enter Your Prediction")
         st.write(user['prediction'])
         
         #에어플로우를 통한 예측값 힌트로 제공 일단 지금은 안됨
-        
+            
          
     else:#로그인 실패시
         st.error("Invalid Username!")

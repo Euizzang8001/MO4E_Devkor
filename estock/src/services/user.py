@@ -1,6 +1,6 @@
 from fastapi import Depends
 
-from schemas.user import User, UserAll, UserCreate, UserRevise
+from schemas.user import User, UserAll, UserCreate, UserRevise, UserRank
 from repository.user import UserRepository
 
 class UserService():
@@ -27,7 +27,7 @@ class UserService():
     def delete_user(self, user_id:str) -> User:
         return self.repository.delete_user(user_id)
     
-    def get_rank(self) -> User:
+    def get_rank(self) -> UserRank:
         users = self.repository.get_rank()
-        return {users}
+        return {"users": users,}
     

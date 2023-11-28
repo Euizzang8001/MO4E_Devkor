@@ -2,6 +2,7 @@ from typing import List, Optional
 from fastapi import Depends
 from sqlalchemy.orm import Session
 import uuid
+from fastapi import HTTPException
 
 from config.database import get_db
 from models.user import User as UserModel
@@ -23,19 +24,19 @@ class UserRepository():
     def get_user_by_name(self, user_name: str) -> User:
         return self.db.query(UserModel).filter(UserModel.user_name == user_name).first()
     
-    def delete_user(self, user_id: str) ->User:
+    def delete_user(self, user_id: str) -> User:
         exist = self.get_user_by_id(user_id = user_id)
         if not exist:
-            return {'404: not found'}
+            raise HTTPException(status_code=404, detail="User not found")
         else:
-            user_name = exist.user_name
             self.db.delete(exist)
-            return {f'다음에 또 만나요..{user_name}님'}
+            self.db.commit()
+            return exist
 
     def revise_user(self, user_id: str, user_revise_dto: UserRevise, commit:bool = True) -> User:
         exist =self.get_user_by_id(user_id = user_id)
         if not exist:
-            return {'404: not found'}
+            raise HTTPException(status_code=404, detail="User not found")
         else:
             self.db.delete(exist)
             data = UserModel(
@@ -57,7 +58,9 @@ class UserRepository():
         user_name = user_create_dto.user_name
         age = user_create_dto.age
         priority = user_create_dto.priority
-
+        score = user_create_dto.score
+        prediction = user_create_dto.prediction
+        delta = user_create_dto.delta
         exists = self.get_user_by_name(user_name=user_name)
         if exists:
             return exists
@@ -68,6 +71,9 @@ class UserRepository():
                 user_name=user_name,
                 age=age,
                 priority=priority,
+                score = score,
+                prediction=prediction,
+                delta=delta,
             )
             self.db.add(data)
             if commit:
@@ -76,7 +82,6 @@ class UserRepository():
             return data
     
     def get_rank(self) -> List[User]:
-        return (
-                    self.db.query(UserModel).order_by(UserModel.score.desc()).limit(10).all()
-                )
+        return self.db.query(UserModel).order_by(UserModel.score.desc()).limit(10).all()
+        
        

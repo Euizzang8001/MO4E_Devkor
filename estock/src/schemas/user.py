@@ -16,7 +16,7 @@ class UserCreate(UserBase):
 
 class User(UserBase):
     user_id: str
-    created_datetime: datetime.datetime
+    last_revised_time: datetime.datetime
     
     class Config:
         orm_mode = True
@@ -27,4 +27,8 @@ class UserAll(BaseModel):
 
 class UserRevise(UserBase):
     pass
+
+class UserRank(BaseModel):
+    users: Optional[List[User]]
+
     

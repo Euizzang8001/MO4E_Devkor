@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 
-from schemas.user import User, UserCreate, UserAll, UserRevise
+from schemas.user import User, UserCreate, UserAll, UserRevise, UserRank
 from services.user import UserService
 
 router = APIRouter(
@@ -17,9 +17,9 @@ async def get_all_users(service: UserService = Depends()):
     return result
 
 #10위권의 사용자 data get
-@router.get('/rank', response_model=User)
+@router.get('/rank', response_model=UserRank)
 async def get_rank(service: UserService = Depends()):
-    result = service/get_rank()
+    result = service.get_rank()
     return result
 
 #id로 사용자 정보 get
