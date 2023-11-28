@@ -9,7 +9,7 @@ class User(Base):
         String(255),
         primary_key=True,
         unique = True,
-        comment='User ID'
+        comment='User ID',
     )
     user_name = Column(
         String(255),
