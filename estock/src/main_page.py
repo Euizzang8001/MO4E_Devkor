@@ -6,31 +6,28 @@ from datetime import datetime
 from schemas.user import User, UserCreate
 import requests
 
-def login(user_id):
-    user = requests.get(get_user_url, params={'user_id': user_id})
-    return user
-
 def revise(user):
-    revise_url = back_url + f"/revise/{user['user_id']}"
-    user_name = st.text_input("user name")
-    user_age = st.number_input("user age", value = 0, step=1, format="%d")
-    user_priority = st.text_input("user_priority")
-    user_info = User(
-                user_name=user_name,
-                age=user_age,
-                priority=user_priority,
-                score=user["score"],
-                prediction=user["prediction"],
-                delta = user["delta"],
-                )
-    if st.button("Real Revise"):
-        response = requests.put(revise_url, params={'user_id': user_id, 'user_revise_dto': user_info})
+    with st.form("revise"):
+        revise_url = back_url + f"/revise/{user['user_id']}"
+        user_name = st.text_input("user name")
+        user_age = st.number_input("user age", value = 0, step=1, format="%d")
+        user_priority = st.text_input("user_priority")
+        user_info = User(
+                    user_name=user_name,
+                    age=user_age,
+                    priority=user_priority,
+                    score=user["score"],
+                    prediction=user["prediction"],
+                    delta = user["delta"],
+                    )
+        if st.button("Real Revise"):
+            response = requests.put(revise_url, params={'user_id': user_id, 'user_revise_dto': user_info})
 
 
 back_url = "http://127.0.0.1:8000/estock"
 get_user_url = back_url + '/get'
-dt_now = str(datetime.now().date())
-dt_now = ''.join(c for c in dt_now if c not in '-')
+dt_today = str(datetime.now().date())
+dt_now = ''.join(c for c in dt_today if c not in '-')
 
 
 #기본 페이지
@@ -46,7 +43,21 @@ if st.button("Login"):
 
         #계정 정보 수정
         if st.button("Revise"):
-            revise(user)                
+            with st.form("revise"):
+                revise_url = back_url + f"/revise/{user['user_id']}"
+                user_name = st.text_input("user name")
+                user_age = st.number_input("user age", value = 0, step=1, format="%d")
+                user_priority = st.text_input("user_priority")
+                user_info = User(
+                            user_name=user_name,
+                            age=user_age,
+                            priority=user_priority,
+                            score=user["score"],
+                            prediction=user["prediction"],
+                            delta = user["delta"],
+                            )
+            if st.button("Real Revise"):
+                response = requests.put(revise_url, params={'user_id': user_id, 'user_revise_dto': user_info})                
 
         #계정 삭제
         if st.button("Delete"):
@@ -97,7 +108,7 @@ else:#로그인 시도 안 했을 때
         )
         if st.button('Create'):
             create_url = back_url + f"/create"
-            response = requests.post(create_url, json=user_info)
+            response = requests.post(create_url, params = {'user_create_dto': user_info})
     #기본 삼성 주식 정보 제공
     data = stock.get_market_ohlcv("20011008", dt_now, "005930")
     data_df = pd.DataFrame(data, columns=["시가", "고가", "저가", "종가", "거래량"])
@@ -110,3 +121,10 @@ else:#로그인 시도 안 했을 때
 # all_data = pd.DataFrame(get_all_users())
 # st.dataframe(all_data, use)
 # st.table([(.name, person.age) for person in sorted_people])
+rank_url = back_url + '/rank'
+rank_data = requests.get(rank_url).json()
+first = rank_data['users'][0]['user_name']
+st.title(f'{dt_today} TOP 10 RANK :sunglasses:')
+st.write(f'Top 1 is {first}!')
+rank_data_pd = pd.DataFrame(rank_data['users'], columns=['user_name', 'age', 'priority', 'score'])
+st.table(rank_data_pd)
