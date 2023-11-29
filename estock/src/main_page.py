@@ -6,6 +6,27 @@ from datetime import datetime
 from schemas.user import User, UserCreate
 import requests
 
+def login(user_id):
+    user = requests.get(get_user_url, params={'user_id': user_id})
+    return user
+
+def revise(user):
+    revise_url = back_url + f"/revise/{user['user_id']}"
+    user_name = st.text_input("user name")
+    user_age = st.number_input("user age", value = 0, step=1, format="%d")
+    user_priority = st.text_input("user_priority")
+    user_info = User(
+                user_name=user_name,
+                age=user_age,
+                priority=user_priority,
+                score=user["score"],
+                prediction=user["prediction"],
+                delta = user["delta"],
+                )
+    if st.button("Real Revise"):
+        response = requests.put(revise_url, params={'user_id': user_id, 'user_revise_dto': user_info})
+
+
 back_url = "http://127.0.0.1:8000/estock"
 get_user_url = back_url + '/get'
 dt_now = str(datetime.now().date())
@@ -18,25 +39,14 @@ st.title('And :blue[Develop] Your Predictive Abilities!')
 
 user_id = st.text_input("user_id")
 if st.button("Login"):
-    user = requests.get(get_user_url, params={'user_id': user_id})
+    user = login(user_id)
     if user:#로그인 성공 시 및 유저 정보 get
         user = user.json()
         st.success(f"Hi! {user['user_name']}!!")
-        #계정 수정
+
+        #계정 정보 수정
         if st.button("Revise"):
-            user_name = st.text_input("user name")
-            user_age = st.number_input("user age", value = 0, step=1, format="%d")
-            user_priority = st.text_input("user_priority")
-            user_info = User(
-                user_name=user_name,
-                age=user_age,
-                priority=user_priority,
-                score=user["score"],
-                prediction=user["prediction"],
-                delta = user["delta"],
-            )
-            revise_url = back_url + f"/revise/{user['user_id']}"
-            response = requests.put(revise_url, params={'user_id':user_id, 'user_revise_dto': user_info})
+            revise(user)                
 
         #계정 삭제
         if st.button("Delete"):
