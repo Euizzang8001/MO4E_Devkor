@@ -29,7 +29,7 @@ async def get_user(user_id: str, service: UserService = Depends()):
     return result
 
 #new 사용자 생성
-@router.post('/create', response_model=User)
+@router.post('/create', response_model=UserCreate)
 async def create_user(user_create_dto: UserCreate, service: UserService = Depends()):
     result = service.create_user(user_create_dto)
     return result

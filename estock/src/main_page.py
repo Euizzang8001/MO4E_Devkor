@@ -29,6 +29,12 @@ get_user_url = back_url + '/get'
 dt_today = str(datetime.now().date())
 dt_now = ''.join(c for c in dt_today if c not in '-')
 
+def login(user_id):
+    user = requests.get(get_user_url, params={'user_id': user_id})
+    if user:
+        return user
+    else:
+        return False 
 
 #기본 페이지
 st.title(':blue[Choose] The Stock You Want! :sunglasses:')
@@ -94,21 +100,23 @@ if st.button("Login"):
 
 else:#로그인 시도 안 했을 때
     #새 계정 생성
-    if st.button('Create New Account'):
-        user_name = st.text_input("user name")
-        user_age = st.number_input("user age", value = 0, step=1, format="%d")
-        user_priority = st.text_input("user_priority")
-        user_info = UserCreate(
-            user_name=user_name,
-            age=user_age,
-            priority=user_priority,
-            score=0,
-            prediction=0,
-            delta=0,
-        )
-        if st.button('Create'):
-            create_url = back_url + f"/create"
-            response = requests.post(create_url, params = {'user_create_dto': user_info})
+    with st.form("create"):
+        user_name = st.text_input("Name")
+        user_age = st.number_input("Age", value = 0, step=1, format="%d")
+        user_priority = st.text_input("Prefer Stock You Want")
+        created = st.form_submit_button('Create')
+        if created:
+            user_info = {
+                "user_name":user_name,
+                "age":user_age,
+                "priority":user_priority,
+                "score":0,
+                "prediction":0,
+                "delta":0,
+            }
+            st.write(user_info)
+            create_url = back_url + "/create"
+            response = requests.post(create_url, json=user_info)
     #기본 삼성 주식 정보 제공
     data = stock.get_market_ohlcv("20011008", dt_now, "005930")
     data_df = pd.DataFrame(data, columns=["시가", "고가", "저가", "종가", "거래량"])
@@ -117,10 +125,7 @@ else:#로그인 시도 안 했을 때
         st.write(data_df)
     st.line_chart(data_df['종가'])
 
-#랭킹 데이터 만들어서 추가
-# all_data = pd.DataFrame(get_all_users())
-# st.dataframe(all_data, use)
-# st.table([(.name, person.age) for person in sorted_people])
+#랭킹 데이터
 rank_url = back_url + '/rank'
 rank_data = requests.get(rank_url).json()
 first = rank_data['users'][0]['user_name']
