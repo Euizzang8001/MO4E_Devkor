@@ -4,8 +4,11 @@ from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from config.database import create_tables
 from routers import user
+from dotenv import load_dotenv
+import os
 
 create_tables()
+
 app = FastAPI()
 
 app.include_router(user.router)

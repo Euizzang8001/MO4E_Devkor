@@ -30,5 +30,3 @@ class UserRevise(UserBase):
 
 class UserRank(BaseModel):
     users: Optional[List[User]]
-
-    
