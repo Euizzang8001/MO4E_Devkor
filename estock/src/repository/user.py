@@ -46,6 +46,7 @@ class UserRepository():
                 priority = user_revise_dto.priority,
                 score=user_revise_dto.score,
                 delta = user_revise_dto.delta,
+                prediction = user_revise_dto.prediction,
             )
             self.db.add(data)
             if commit:

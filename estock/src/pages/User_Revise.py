@@ -28,7 +28,7 @@ def revise_user(user):
         if revise_button:
             response = requests.put(revise_url, params={'user_id': user['user_id']}, json = user_info)
             if response.status_code == 200:
-                st.write(f"Welcome to Stock Ed u! {user_name}!")
+                st.write(f"Revise Success! Please Log In Again, {user_name}!")
                 st.session_state.current = None
                 time.sleep(3)
                 st.experimental_rerun()

@@ -16,7 +16,7 @@ def create_user():
     with st.form("Create"):
         user_name = st.text_input("Name")
         user_age = st.number_input("Age", value = 0, step=1, format="%d")
-        user_priority = st.text_input("Prefer Stock You Want")
+        user_priority = st.text_input("Prefer Stock Ticker You Want")
         new_info = {
             'user_name': user_name,
             'age': user_age,
@@ -29,9 +29,13 @@ def create_user():
         if create:
             create_url = back_url + "/create"
             response = requests.post(create_url, json=new_info)
-            st.write(f"Welcome to Stock Ed u!{user_name}!")
-            time.sleep(3)
-            st.experimental_rerun()
+            if response.status_code == 200:
+                st.write(f"Welcome to Stock Ed u! {user_name}!")
+                st.session_state.current = None
+                time.sleep(3)
+                st.experimental_rerun()
+            else:
+                st.error(f"Error creating user: {response.text}")
 
 if __name__ == "__main__":
     create_user()

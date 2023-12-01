@@ -7,7 +7,6 @@ from schemas.user import User, UserCreate
 import requests
 import time
 
-from pages.create import create_user
 
 back_url = "http://127.0.0.1:8000/estock"
 get_user_url = back_url + '/get'
@@ -16,6 +15,26 @@ dt_now = ''.join(c for c in dt_today if c not in '-')
 
 if 'current' not in st.session_state:
     st.session_state['current'] = None
+
+def revise_prediction(user, today_prediction):
+    revise_pred_url = back_url + f"/revise/{user['user_id']}"
+    user_info = {
+        'user_name': user['user_name'],
+        'age': user['age'],
+        'priority': user['priority'],
+        'score': user['score'],
+        'prediction': today_prediction,
+        'delta': user['delta'],
+    }
+    response = requests.put(revise_pred_url, params={'user_id': user['user_id']}, json = user_info)
+
+    if response.status_code == 200:
+        st.success(f"Prediction Score Success!")
+        st.session_state.current['prediction'] = today_prediction
+        time.sleep(2)
+        st.experimental_rerun()
+    else:
+        st.error(f"Error creating user: {response.text}")
 
 #기본 페이지
 st.title(':blue[Choose] The Stock You Want! :sunglasses:')
@@ -40,6 +59,7 @@ if not st.session_state['current']:
     #새계정 생성 -> create.py
 
     #기본 삼성 주식 정보 제공
+    st.header('Samsung Stock Data')
     data = stock.get_market_ohlcv("20011008", dt_now, "005930")
     data_df = pd.DataFrame(data, columns=["시가", "고가", "저가", "종가", "거래량"])
     check = st.checkbox('I want to see the raw datas')
@@ -61,7 +81,7 @@ else:#현재 로그인 정보가 있으면
     #선호 주식 정보 제공
     data = stock.get_market_ohlcv("20011008", dt_now, st.session_state.current['priority'])
     data_df = pd.DataFrame(data, columns=["시가", "고가", "저가", "종가", "거래량"])
-    st.write(f"{st.session_state.current['user_name']}'s Prefer Stock")
+    st.header(f"{st.session_state.current['user_name']}'s Prefer Stock")
     st.write(data_df)
     st.line_chart(data_df['종가'])
 
@@ -69,15 +89,18 @@ else:#현재 로그인 정보가 있으면
     st.metric(label=f"{st.session_state.current['user_name']}\'s Current Score", value = st.session_state.current['score'], delta = st.session_state.current['delta'], delta_color = 'inverse')
                 
     #오늘의 주식 예측값 설정 및 저장
-    st.write(f"{st.session_state.current['user_name']}'s today prediction!!")
-    st.session_state.current['prediction'] = st.number_input("Enter Your Prediction")
-    st.write(st.session_state.current['prediction'])    
+    st.header(f"{st.session_state.current['user_name']}'s Today Prediction: {st.session_state.current['prediction']}won")
+    today_prediction = st.number_input("Enter Your Prediction", value = st.session_state.current['prediction'], step=1, format="%d")
+    #주식 예측값 제시 -> airflow로 해야할 것 같다..
+    revise_prediction_button = st.button("Revise My Prediction")
+    if revise_prediction_button:
+        revise_prediction(st.session_state.current, today_prediction)
 
 #랭킹 데이터 -> 캐시데이터로 바꾸자
 rank_url = back_url + '/rank'
 rank_data = requests.get(rank_url).json()
 first = rank_data['users'][0]['user_name']
 st.title(f'{dt_today} TOP 10 RANK :sunglasses:')
-st.write(f'Top 1 is {first}!')
+st.header(f'Top 1 is {first}!')
 rank_data_pd = pd.DataFrame(rank_data['users'], columns=['user_name', 'age', 'priority', 'score'])
 st.table(rank_data_pd)
