@@ -20,7 +20,7 @@ def get_stock(ticker):
     ticker_stock = stock.get_market_ohlcv("20150925", dt_now, ticker)
     ticker_stock.to_csv(f'./{dt_now}_{ticker}_stock.csv', index=True)
 
-def nexon_xy(ticker):
+def stock_xy(ticker):
     dt_now = get_today()
     nexon = pd.read_csv(f'./{dt_now}_{ticker}_stock.csv', index_col=0)
     scaler = MinMaxScaler()
@@ -33,7 +33,7 @@ def nexon_xy(ticker):
     np.save(f'./{dt_now}_test2.npy', test2)
     
        
-def lstm_nexon(today_info):
+def lstm_stock(today_info):
     dt_now = get_today()
     test = np.load(f'./{dt_now}_test.npy')
     test2 = np.load(f'./{dt_now}_test2.npy')
@@ -51,9 +51,9 @@ def lstm_nexon(today_info):
     pred = result_model.predict(np.array([today_info]))
     return pred
 
-def predict_or_check():
+def predict_or_check(ticker):
     dt_now = get_today()
-    nexon = pd.read_csv(f'./{dt_now}_nexon_stock.csv', index_col=0)
+    nexon = pd.read_csv(f'./{dt_now}_{ticker}_stock.csv', index_col=0)
     scaler = MinMaxScaler()
     scaler2 = MinMaxScaler()
     scale_cols_for_x = ['시가', '고가', '저가', '거래량']
@@ -64,13 +64,13 @@ def predict_or_check():
     kst = pendulum.timezone('Asia/Seoul')
     current_time = datetime.now().astimezone(kst)
 
-    today_nexon = stock.get_market_ohlcv(dt_now, dt_now, "225570")
-    today_info = scaler.transform([[today_nexon['시가'].values[0], today_nexon['고가'].values[0], today_nexon['저가'].values[0], today_nexon['거래량'].values[0]]])
-    test = lstm_nexon(today_info=today_info)
+    today_ticker = stock.get_market_ohlcv(dt_now, dt_now, ticker})
+    today_info = scaler.transform([[today_ticker['시가'].values[0], today_ticker['고가'].values[0], today_ticker['저가'].values[0], today_ticker['거래량'].values[0]]])
+    test = lstm_stock(today_info=today_info)
     today_pred = scaler2.inverse_transform(test)
     today_pred = "{:.2f}".format(today_pred[0][0])
     if current_time.hour >= 15:
-        today_close = today_nexon['종가'].values[0]
+        today_close = int(round(today_ticker['종가'].values[0]))
         print(f'넥슨!\n{dt_now}의 예측 종가는?:\n{today_pred}원\n오늘의 진짜 종가!:\n{today_close}')
     else:
          print(f'넥슨!\n{dt_now}의 예측 종가는?:\n{today_pred}원')
