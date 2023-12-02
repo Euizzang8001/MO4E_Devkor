@@ -86,7 +86,7 @@ class StockRepository():
             return exists
         else:
             data = StockModel(
-                date = date,
+                date = today_date,
                 samsung = samsung,
                 kakao = kakao,
                 naver = naver,
