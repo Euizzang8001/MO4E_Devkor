@@ -21,11 +21,6 @@ class User(Base):
         nullable=False,
         comment="User Age",
     )
-    priority = Column(
-        String(255),
-        nullable=True,
-        comment = "Priority",
-    )
     score = Column(
         Integer,
         nullable=False,

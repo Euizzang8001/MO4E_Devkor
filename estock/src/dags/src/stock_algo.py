@@ -6,6 +6,12 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
 import tensorflow as tf
 import pendulum
+from schemas.user import User, UserCreate, UserAll, UserRevise, UserRank, Stock, StockAll, StockCreate, StockRevise
+from services.user import UserService, StockService
+import requests
+
+back_url = "http://127.0.0.1:8000/estock"
+dt_today = str(datetime.now().date())
 
 def get_today():
     kst = pendulum.timezone('Asia/Seoul')
@@ -51,7 +57,7 @@ def lstm_stock(today_info):
     pred = result_model.predict(np.array([today_info]))
     return pred
 
-def predict_or_check(ticker):
+def predict_or_check(ticker, **kwargs):
     dt_now = get_today()
     nexon = pd.read_csv(f'./{dt_now}_{ticker}_stock.csv', index_col=0)
     scaler = MinMaxScaler()
@@ -64,13 +70,48 @@ def predict_or_check(ticker):
     kst = pendulum.timezone('Asia/Seoul')
     current_time = datetime.now().astimezone(kst)
 
-    today_ticker = stock.get_market_ohlcv(dt_now, dt_now, ticker})
+    today_ticker = stock.get_market_ohlcv(dt_now, dt_now, ticker)
     today_info = scaler.transform([[today_ticker['시가'].values[0], today_ticker['고가'].values[0], today_ticker['저가'].values[0], today_ticker['거래량'].values[0]]])
     test = lstm_stock(today_info=today_info)
-    today_pred = scaler2.inverse_transform(test)
-    today_pred = "{:.2f}".format(today_pred[0][0])
-    if current_time.hour >= 15:
-        today_close = int(round(today_ticker['종가'].values[0]))
-        print(f'넥슨!\n{dt_now}의 예측 종가는?:\n{today_pred}원\n오늘의 진짜 종가!:\n{today_close}')
-    else:
-         print(f'넥슨!\n{dt_now}의 예측 종가는?:\n{today_pred}원')
+    tomorrow_pred = scaler2.inverse_transform(test)
+    tomorrow_pred = int(round(tomorrow_pred))
+    today_close = today_ticker['종가'].values[0]
+    ti = kwargs['ti']
+    ti.xcom_push(key=f'tomorrow_{ticker}_pred', value=tomorrow_pred)
+    ti.xcom_push(key=f'today_{ticker}_close', value=today_close)
+
+    return True
+
+def finish(**kwargs):
+    ti = kwargs['ti']
+    new_info = {
+        'samsung' : ti.xcom_pull(task_ids='predict_samsung_task', key='tomorrow__005930_pred'),
+        'samsung_lstm': ti.xcom_pull(task_ids='predict_samsung_task', key='today_005930_close'),
+        
+    }
+    create_url = back_url + "/create-stock"
+    response = requests.post(create_url, json=new_info)
+    return response
+
+def revise():
+    kst = pendulum.timezone('Asia/Seoul')
+    current_time = datetime.now().astimezone(kst)
+    dt_now = str(current_time.date())
+
+    all_user_url = back_url + '/all'
+    all_user = requests.get(all_user_url)
+    get_stock_url = back_url + '/get_stock'
+    today_stock = requests.get(get_stock_url, params={'date': dt_now })
+
+    for user in all_user["users"]:
+        revise_url = back_url + f"/revise/{user['user_id']}"
+        delta = int(round(1 / abs(today_stock['samsung'] - user['prediction']))) * 1000
+        user_info = {
+            'user_name': user['user_name'],
+            'age': user['age'],
+            'score': user['score'] + delta,
+            'prediction': user['prediction'],
+            'delta': delta,
+        }
+        response = requests.put(revise_url, params={'user_id': user['user_id']}, json=user_info)
+    return response

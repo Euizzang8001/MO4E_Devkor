@@ -5,7 +5,6 @@ from typing import List, Optional
 class UserBase(BaseModel):
     user_name: str
     age: int
-    priority: str
     score: int
     prediction: int
     delta: int
@@ -34,14 +33,6 @@ class UserRank(BaseModel):
 class StockBase(BaseModel):
     samsung: int
     samsung_lstm: int
-    kakao: int
-    kakao_lstm: int
-    naver: int
-    naver_lstm: int
-    hive: int
-    hive_lstm: int
-    cj: int
-    cj_lstm: int
 
 class Stock(StockBase):
     date: str

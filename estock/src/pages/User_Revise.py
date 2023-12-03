@@ -15,12 +15,10 @@ def revise_user(user):
         revise_url = back_url + f"/revise/{user['user_id']}"
         user_name = st.text_input("user name")
         user_age = st.number_input("user age", value = 0, step=1, format="%d")
-        user_priority = st.text_input("user_priority")
         revise_button = st.form_submit_button("Revise")
         user_info = {
             'user_name': user_name,
             'age': user_age,
-            'priority': user_priority,
             'score': user['score'],
             'prediction': user['prediction'],
             'delta': user['delta'],

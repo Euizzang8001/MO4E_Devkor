@@ -45,7 +45,6 @@ class UserRepository():
                 user_id = user_id,
                 user_name = user_revise_dto.user_name,
                 age = user_revise_dto.age,
-                priority = user_revise_dto.priority,
                 score=user_revise_dto.score,
                 delta = user_revise_dto.delta,
                 prediction = user_revise_dto.prediction,
@@ -60,7 +59,6 @@ class UserRepository():
     def create_user(self, user_create_dto: UserCreate, commit: bool = True) -> User:
         user_name = user_create_dto.user_name
         age = user_create_dto.age
-        priority = user_create_dto.priority
         score = user_create_dto.score
         prediction = user_create_dto.prediction
         delta = user_create_dto.delta
@@ -73,7 +71,6 @@ class UserRepository():
                 user_id=user_id,
                 user_name=user_name,
                 age=age,
-                priority=priority,
                 score = score,
                 prediction=prediction,
                 delta=delta,
@@ -109,15 +106,7 @@ class StockRepository():
             data = StockModel(
                 date = date,
                 samsung = stock_revise_dto.samsung,
-                kakao = stock_revise_dto.kakao,
-                naver = stock_revise_dto.naver,
-                hive = stock_revise_dto.hive,
-                cj = stock_revise_dto.cj,
                 samsung_lstm = stock_revise_dto.samsung_lstm,
-                kakao_lstm = stock_revise_dto.kakao_lstm,
-                naver_lstm = stock_revise_dto.naver_lstm,
-                hive_lstm = stock_revise_dto.hive_lstm,
-                cj_lstm = stock_revise_dto.cj_lstm,
             )
             self.db.add(data)
             if commit:
@@ -128,15 +117,7 @@ class StockRepository():
 
     def create_stock(self, stock_create_dto: StockCreate, commit: bool = True) -> Stock:
         samsung = stock_create_dto.samsung
-        kakao = stock_create_dto.kakao
-        naver = stock_create_dto.naver
-        hive = stock_create_dto.hive
-        cj = stock_create_dto.cj
         samsung_lstm = stock_create_dto.samsung_lstm
-        kakao_lstm = stock_create_dto.kakao_lstm
-        naver_lstm = stock_create_dto.naver_lstm
-        hive_lstm = stock_create_dto.hive_lstm
-        cj_lstm = stock_create_dto.cj_lstm
         today_date = date.today()
         exists = self.get_stock_by_date(date=today_date)
         if exists:
@@ -145,15 +126,7 @@ class StockRepository():
             data = StockModel(
                 date = today_date,
                 samsung = samsung,
-                kakao = kakao,
-                naver = naver,
-                hive = hive,
-                cj = cj,
                 samsung_lstm = samsung_lstm,
-                kakao_lstm = kakao_lstm,
-                naver_lstm = naver_lstm,
-                hive_lstm = hive_lstm,
-                cj_lstm = cj_lstm,
             )
             self.db.add(data)
             if commit:

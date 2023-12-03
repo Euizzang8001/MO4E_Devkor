@@ -16,11 +16,9 @@ def create_user():
     with st.form("Create"):
         user_name = st.text_input("Name")
         user_age = st.number_input("Age", value = 0, step=1, format="%d")
-        user_priority = st.text_input("Prefer Stock Ticker You Want")
         new_info = {
             'user_name': user_name,
             'age': user_age,
-            'priority': user_priority,
             'score': 0,
             'prediction': 0,
             'delta': 0,

@@ -64,7 +64,7 @@ async def create_stock(stock_create_dto: StockCreate, service: StockService = De
     result = service.create_stock(stock_create_dto)
     return result
 
-#해당 주식 정보 get
+#해당 주식 정보 get 
 @router.get('/get-stock', response_model=Stock)
 async def get_stock(date: str, service: StockService = Depends()):
     result = service.get_stock_by_date(date)

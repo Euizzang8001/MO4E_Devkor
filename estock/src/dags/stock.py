@@ -4,13 +4,13 @@ from datetime import timedelta
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 
-from src.stock_algo import get_today, get_nexon, nexon_xy, predict_or_check
+from src.stock_algo import finish, revise, get_today, get_stock, stock_xy, predict_or_check, revise
 
 
 # from src.stock_algo import
 
 kst = pendulum.timezone('Asia/Seoul')
-dag_name = "Euizzang_First_Dag"
+dag_name = "STOCK_ED_U"
 
 default_args = {
     'owner': 'Euizzang',
@@ -20,22 +20,31 @@ default_args = {
 with DAG(
     dag_id=dag_name,
     default_args=default_args,
-    description='어려우어어어어어어어어',
-    schedule_interval=timedelta(hours=12),
-    start_date = pendulum.datetime(2023, 11, 6, 9, 0, 0, tz=kst),
+    description='STOCK_ED_U',
+    schedule_interval=timedelta(hours=24),
+    start_date = pendulum.datetime(2023, 12, 3, 16, 0, 0, tz=kst),
     catchup=False,
     tags=['stock', 'Euizzang']
 ) as dag:
-    get_nexon_task = PythonOperator(
-        task_id='get_nexon_task',
-        python_callable=get_nexon,
+    get_samsung_task = PythonOperator(
+        task_id='get_samsung_task',
+        python_callable=get_stock('005930'),
     )
-    nexon_xy_task = PythonOperator(
-        task_id = 'nexon_xy_task',
-        python_callable=nexon_xy,
+    samsung_xy_task = PythonOperator(
+        task_id = 'samsung_xy_task',
+        python_callable=stock_xy('005930'),
     )
-    predict_or_check_task = PythonOperator(
+    predict_samsung_task = PythonOperator(
         task_id = 'predict_or_check_task',
-        python_callable=predict_or_check,
+        python_callable=predict_or_check('005930'),
     )
-    get_nexon_task >> nexon_xy_task >> predict_or_check_task
+    
+    finish_task = PythonOperator(
+        task_id = 'finish_task',
+        python_callable=finish(),
+    )
+    revise_task = PythonOperator(
+        task_id = 'revise_task',
+        python_callable=revise(),
+    )
+    get_samsung_task >> samsung_xy_task >> predict_samsung_task >> finish_task >> revise_task
