@@ -6,8 +6,6 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
 import tensorflow as tf
 import pendulum
-from schemas.user import User, UserCreate, UserAll, UserRevise, UserRank, Stock, StockAll, StockCreate, StockRevise
-from services.user import UserService, StockService
 import requests
 
 back_url = "http://127.0.0.1:8000/estock"
@@ -21,14 +19,14 @@ def get_today():
     dt_now = ''.join(c for c in dt_now if c not in '-')
     return dt_now
 
-def get_stock(ticker):
+def get_stock():
     dt_now = get_today()
-    ticker_stock = stock.get_market_ohlcv("20150925", dt_now, ticker)
-    ticker_stock.to_csv(f'./{dt_now}_{ticker}_stock.csv', index=True)
+    ticker_stock = stock.get_market_ohlcv("20150925", dt_now, '005930')
+    ticker_stock.to_csv(f'./{dt_now}_005930_stock.csv', index=True)
 
-def stock_xy(ticker):
+def stock_xy():
     dt_now = get_today()
-    nexon = pd.read_csv(f'./{dt_now}_{ticker}_stock.csv', index_col=0)
+    nexon = pd.read_csv(f'./{dt_now}_005930_stock.csv', index_col=0)
     scaler = MinMaxScaler()
     scaler2 = MinMaxScaler()
     scale_cols_for_x = ['시가', '고가', '저가', '거래량']
@@ -57,9 +55,9 @@ def lstm_stock(today_info):
     pred = result_model.predict(np.array([today_info]))
     return pred
 
-def predict_or_check(ticker, **kwargs):
+def predict_or_check(**kwargs):
     dt_now = get_today()
-    nexon = pd.read_csv(f'./{dt_now}_{ticker}_stock.csv', index_col=0)
+    nexon = pd.read_csv(f'./{dt_now}_005930_stock.csv', index_col=0)
     scaler = MinMaxScaler()
     scaler2 = MinMaxScaler()
     scale_cols_for_x = ['시가', '고가', '저가', '거래량']
@@ -70,28 +68,26 @@ def predict_or_check(ticker, **kwargs):
     kst = pendulum.timezone('Asia/Seoul')
     current_time = datetime.now().astimezone(kst)
 
-    today_ticker = stock.get_market_ohlcv(dt_now, dt_now, ticker)
+    today_ticker = stock.get_market_ohlcv("20231201", "20231201", '005930')
     today_info = scaler.transform([[today_ticker['시가'].values[0], today_ticker['고가'].values[0], today_ticker['저가'].values[0], today_ticker['거래량'].values[0]]])
     test = lstm_stock(today_info=today_info)
     tomorrow_pred = scaler2.inverse_transform(test)
-    tomorrow_pred = int(round(tomorrow_pred))
+    tomorrow_pred = int(round(tomorrow_pred[0][0]))
     today_close = today_ticker['종가'].values[0]
     ti = kwargs['ti']
-    ti.xcom_push(key=f'tomorrow_{ticker}_pred', value=tomorrow_pred)
-    ti.xcom_push(key=f'today_{ticker}_close', value=today_close)
-
-    return True
+    ti.xcom_push(key=f'tomorrow_005930_pred', value=int(tomorrow_pred))
+    ti.xcom_push(key=f'today_005930_close', value=int(today_close))
+    print(tomorrow_pred, today_close)
 
 def finish(**kwargs):
     ti = kwargs['ti']
     new_info = {
-        'samsung' : ti.xcom_pull(task_ids='predict_samsung_task', key='tomorrow__005930_pred'),
-        'samsung_lstm': ti.xcom_pull(task_ids='predict_samsung_task', key='today_005930_close'),
-        
+        'samsung' : ti.xcom_pull(task_ids='predict_samsung_task', key='tomorrow__005930_close'),
+        'samsung_lstm': ti.xcom_pull(task_ids='predict_samsung_task', key='today_005930_pred'),
     }
-    create_url = back_url + "/create-stock"
+    create_url = back_url + "/createstock"
     response = requests.post(create_url, json=new_info)
-    return response
+    response.raise_for_status()
 
 def revise():
     kst = pendulum.timezone('Asia/Seoul')
@@ -100,7 +96,7 @@ def revise():
 
     all_user_url = back_url + '/all'
     all_user = requests.get(all_user_url)
-    get_stock_url = back_url + '/get_stock'
+    get_stock_url = back_url + '/getstock'
     today_stock = requests.get(get_stock_url, params={'date': dt_now })
 
     for user in all_user["users"]:
@@ -114,4 +110,3 @@ def revise():
             'delta': delta,
         }
         response = requests.put(revise_url, params={'user_id': user['user_id']}, json=user_info)
-    return response

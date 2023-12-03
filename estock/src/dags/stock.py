@@ -25,26 +25,27 @@ with DAG(
     start_date = pendulum.datetime(2023, 12, 3, 16, 0, 0, tz=kst),
     catchup=False,
     tags=['stock', 'Euizzang']
+
 ) as dag:
     get_samsung_task = PythonOperator(
         task_id='get_samsung_task',
-        python_callable=get_stock('005930'),
+        python_callable=get_stock,
     )
     samsung_xy_task = PythonOperator(
         task_id = 'samsung_xy_task',
-        python_callable=stock_xy('005930'),
+        python_callable=stock_xy,
     )
     predict_samsung_task = PythonOperator(
         task_id = 'predict_or_check_task',
-        python_callable=predict_or_check('005930'),
+        python_callable=predict_or_check,
     )
     
     finish_task = PythonOperator(
         task_id = 'finish_task',
-        python_callable=finish(),
+        python_callable=finish,
     )
     revise_task = PythonOperator(
         task_id = 'revise_task',
-        python_callable=revise(),
+        python_callable=revise,
     )
     get_samsung_task >> samsung_xy_task >> predict_samsung_task >> finish_task >> revise_task

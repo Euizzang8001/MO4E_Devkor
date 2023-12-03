@@ -92,6 +92,9 @@ else:#현재 로그인 정보가 있으면
     st.header(f"{st.session_state.current['user_name']}'s Today Prediction: {st.session_state.current['prediction']}won")
     today_prediction = st.number_input("Enter Your Prediction", value = st.session_state.current['prediction'], step=1, format="%d")
     #주식 예측값 제시 -> airflow로 해야할 것 같다..
+    prediction_url = back_url + '/get-stock'
+    stock_prediction = requests.get(prediction_url, params={'date': dt_today})
+    st.write(f"Hint(LSTM prediction: {stock_prediction['samsung_lstm']}won")
     revise_prediction_button = st.button("Revise My Prediction")
     if revise_prediction_button:
         revise_prediction(st.session_state.current, today_prediction)
