@@ -20,7 +20,7 @@ default_args = {
 with DAG(
     dag_id=dag_name,
     default_args=default_args,
-    description='STOCK_ED_U',
+    description='stock',
     schedule_interval=timedelta(hours=24),
     start_date = pendulum.datetime(2023, 12, 3, 16, 0, 0, tz=kst),
     catchup=False,

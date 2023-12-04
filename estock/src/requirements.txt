@@ -1,6 +1,0 @@
-pykrx
-pandas
-numpy
-tensorflow
-scikit-learn
-pendulum

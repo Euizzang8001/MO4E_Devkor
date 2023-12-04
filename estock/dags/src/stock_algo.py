@@ -68,7 +68,7 @@ def predict_or_check(**kwargs):
     kst = pendulum.timezone('Asia/Seoul')
     current_time = datetime.now().astimezone(kst)
 
-    today_ticker = stock.get_market_ohlcv("20231201", "20231201", '005930')
+    today_ticker = stock.get_market_ohlcv(dt_now, dt_now, '005930')
     today_info = scaler.transform([[today_ticker['시가'].values[0], today_ticker['고가'].values[0], today_ticker['저가'].values[0], today_ticker['거래량'].values[0]]])
     test = lstm_stock(today_info=today_info)
     tomorrow_pred = scaler2.inverse_transform(test)
