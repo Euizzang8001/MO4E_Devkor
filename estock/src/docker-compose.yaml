@@ -295,4 +295,4 @@ services:
         condition: service_completed_successfully
 
 volumes:
-  postgres-db-volume: 
+  postgres-db-volume:

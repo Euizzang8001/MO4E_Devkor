@@ -90,7 +90,7 @@ def finish(**kwargs):
     response.raise_for_status()
 
 def revise():
-    kst = pendulum.timezone('Asia/Seoul')
+    kst = pendulum.timezone('Asia/Seoul')   
     current_time = datetime.now().astimezone(kst)
     dt_now = str(current_time.date())
 
