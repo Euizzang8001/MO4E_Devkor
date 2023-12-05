@@ -294,5 +294,15 @@ services:
       airflow-init:
         condition: service_completed_successfully
 
+  web:
+    build: .
+    ports:
+      - "8000:5000"
+    volumes:
+      - .:/code
+    environment:
+      FLASK_DEBUG: "true"
+  
+
 volumes:
   postgres-db-volume:
