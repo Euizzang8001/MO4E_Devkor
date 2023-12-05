@@ -8,3 +8,4 @@ pykrx
 numpy
 pendulum
 pandas
+starlette
