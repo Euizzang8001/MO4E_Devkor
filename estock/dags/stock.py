@@ -15,7 +15,7 @@ dag_name = "STOCK_ED_U"
 default_args = {
     'owner': 'Euizzang',
     'retries': 3,
-    'retry_delay': timedelta(minutes=1)
+    'retry_delay': timedelta(minutes=1) 
 }
 with DAG(
     dag_id=dag_name,
