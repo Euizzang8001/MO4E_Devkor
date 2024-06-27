@@ -1,0 +1,6 @@
+streamlit
+pandas
+numpy
+pykrx
+datetime
+requests
