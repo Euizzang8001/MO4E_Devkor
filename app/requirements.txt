@@ -1,11 +1,15 @@
+streamlit
+pandas
+numpy
+pykrx
+datetime
+requests
 fastapi
 uvicorn[standard]
 sqlalchemy
 uuid
 scikit-learn
 tensorflow
-pykrx
-numpy
 pendulum
 pandas
 starlette

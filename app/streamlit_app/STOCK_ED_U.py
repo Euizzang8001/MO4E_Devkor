@@ -5,9 +5,9 @@ from pykrx import stock
 from datetime import datetime
 import requests
 import time
+from schemas import *
 
-
-back_url = "http://backend/estock"
+back_url = "http://127.0.0.1:8000/estock"
 get_user_url = back_url + '/get'
 dt_today = str(datetime.now().date())
 dt_now = ''.join(c for c in dt_today if c not in '-')
@@ -78,7 +78,7 @@ else:#현재 로그인 정보가 있으면
     #계정 정보 삭제 -> delete.py
 
     #선호 주식 정보 제공
-    data = stock.get_market_ohlcv("20011008", dt_now, st.session_state.current['priority'])
+    data = stock.get_market_ohlcv("20011008", dt_now, "005930")
     data_df = pd.DataFrame(data, columns=["시가", "고가", "저가", "종가", "거래량"])
     st.header(f"{st.session_state.current['user_name']}'s Prefer Stock")
     st.write(data_df)

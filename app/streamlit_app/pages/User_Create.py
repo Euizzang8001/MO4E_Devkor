@@ -7,7 +7,7 @@ from schemas.user import User, UserCreate
 import requests
 import time
 
-back_url = "http://backend/estock"
+back_url = "http://127.0.0.1:8000/estock"
 
 #new account
 

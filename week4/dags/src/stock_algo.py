@@ -8,11 +8,12 @@ import tensorflow as tf
 import pendulum
 
 def get_today():
-    kst = pendulum.timezone('Asia/Seoul')
-    current_time = datetime.now().astimezone(kst)
-    dt_now = str(current_time.date())
-    print(f'{dt_now} 기준')
-    dt_now = ''.join(c for c in dt_now if c not in '-')
+    # kst = pendulum.timezone('Asia/Seoul')
+    # current_time = datetime.now().astimezone(kst)
+    # dt_now = str(current_time.date())
+    # print(f'{dt_now} 기준')
+    # dt_now = ''.join(c for c in dt_now if c not in '-')
+    dt_now = "2024-06-28"
     return dt_now
 
 def get_nexon():
